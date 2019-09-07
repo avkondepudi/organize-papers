@@ -89,7 +89,7 @@ while IFS= read -r line || [ -n "$line" ]; do
 		link)
 			nlink="$VALUE"
 			for prefix in "https*:\/\/" "www\."; do nlink=$(echo "$nlink" | sed -e "s/${prefix}//g" ); done
-			for suffix in "com" "org" "edu" "gov"; do nlink=${nlink%\.${suffix}*}; done
+			for suffix in "com" "org" "edu" "gov" ".github.io" ".io" ".ai"; do nlink=${nlink%\.${suffix}*}; done
 			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS}^<[${nlink}](${VALUE})>"
 			else LINKS="${LINKS}^\[[${nlink}](${VALUE})\]"
 			fi
