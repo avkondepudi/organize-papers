@@ -1,6 +1,8 @@
 #!/bin/bash
 
 global() {
+
+# check if tree present
 if [[ ! -x "$(command -v tree)" ]]; then echo "install tree"; exit 1; fi
 
 IFILE="papers.yml"
@@ -9,16 +11,20 @@ REPONAME=$(pwd); REPONAME="${REPONAME##*\/}"
 BRANCH="$(git branch | grep \* | cut -d ' ' -f2)"
 
 FILEDIR="."
-MFILE="README.txt"
+MFILE="README"
 
 resetvars
 }
 
 resetvars() {
-	NAME=""; LINKS=""; YEAR=""
+# main vars for functions
+
+NAME=""; LINKS=""; YEAR=""
 }
 
 addtitle() {
+# creates file and adds header
+
 local filename="$1"
 local title="$2"
 
@@ -33,6 +39,8 @@ EOF
 }
 
 addinfo() {
+# adds paper to file
+
 if [[ ! -z "$NAME" ]]; then
 	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md"; fi
 	LINKS="$(echo "$LINKS" | sed -e 's/\^/ /g' -e 's/ //g')"
@@ -42,6 +50,8 @@ fi
 }
 
 getpath() {
+# determines current subdir
+
 if [[ -z "$VALUE" ]]; then
 	local line="$1"
 	if [[ $LEVEL -eq 1 ]]; then RELPATH="$FILEDIR"; fi
@@ -67,6 +77,8 @@ fi
 }
 
 getinfo() {
+# essentially a crude YAML parser
+
 local line="$1"
 VALUE="${line#*:}"; VALUE="${VALUE:1}"
 KEY="${line%%:*}"; KEY=$(echo $KEY | sed -e "s/-//g" -e "s/ //g")
@@ -76,6 +88,8 @@ fi
 }
 
 buildfiles() {
+# main function for creating all files
+
 rm README.* &> /dev/null 
 if [[ ! -f $MFILE ]]; then touch $MFILE; fi
 while IFS= read -r line || [ -n "$line" ]; do
@@ -111,6 +125,8 @@ addinfo
 }
 
 addnum() {
+# adds number of papers found in each category to dir file
+
 local val=$1
 local index=$2
 
@@ -120,6 +136,8 @@ cp tREADME $MFILE
 }
 
 buildmainacc() {
+# counts how many papers in each dir; cool recursion
+
 local INDEX=$2
 DIR="$1"; local SUM=0; local NFILES=0
 for item in "$DIR"/*; do
@@ -151,10 +169,20 @@ echo $SUM $NFILES $INDEX
 }
 
 buildmain() {
+# main function for creating dir file
+
 OFFSET=$(wc -l < $MFILE | tr -d '[:space:]'); ((++OFFSET))
 tree -I "README.*" -P "*.md" >> $MFILE
 buildmainacc . 0 &> /dev/null
 rm "${MFILE}.bak"; rm tREADME
+}
+
+help() {
+cat << EOF
+-d | --dir [directory; default: .]
+-i | --input [input file; default: papers.yml]
+-m | --main [directory file; default: README]
+EOF
 }
 
 main() {
@@ -165,6 +193,7 @@ for ((i=1;i<=$#;i++)); do
 		-d | --dir) FILEDIR=${@:$((i+1)):1};;
 		-i | --input) IFILE=${@:$((i+1)):1};;
 		-m | --main) MFILE=${@:$((i+1)):1};;
+		-h | --help) help
 	esac
 done
 
