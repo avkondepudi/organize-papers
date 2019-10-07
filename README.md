@@ -8,7 +8,7 @@ Needs tree.
 brew install tree
 ```
 
-Example: https://github.com/avkondepudi/glowing-disco.
+An example can be found [here](https://github.com/avkondepudi/glowing-disco).
 
 ### usage/info
 
