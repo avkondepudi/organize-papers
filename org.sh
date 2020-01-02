@@ -28,6 +28,15 @@ resetvars() {
 NAME=""; LINKS=""; YEAR=""
 }
 
+# removes directories
+removedirs() {
+for item in ./*; do
+	if [[ -d "$item" ]]; then
+		rm -rf "$item"
+	fi
+done
+}
+
 # creates file and adds title
 addtitle() {
 local filename="$1"
@@ -97,6 +106,8 @@ fi
 
 # main func for creating all files
 buildfiles() {
+
+removedirs
 
 rm $MFILE &> /dev/null 
 rm README.* &> /dev/null 
