@@ -96,7 +96,7 @@ fi
 # main func for creating all files
 buildfiles() {
 
-# change to $MFILE?
+rm $MFILE &> /dev/null 
 rm README.* &> /dev/null 
 if [[ ! -f $MFILE ]]; then touch $MFILE; fi
 
@@ -112,8 +112,6 @@ while IFS= read -r line || [ -n "$line" ]; do
 			nlink="$VALUE"
 			for prefix in "https*:\/\/" "www\."; do nlink=$(echo "$nlink" | sed -e "s/${prefix}//g" ); done
 			for suffix in "com" "org" "edu" "gov" "github.io" "io" "ai"; do nlink=${nlink%\.${suffix}*}; done
-
-			# change later!
 			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
 			else LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
 			fi
@@ -149,33 +147,33 @@ buildmainacc() {
 local INDEX=$2
 DIR="$1"; local SUM=0; local NFILES=0
 for item in "$DIR"/*; do
-    if [[ -d "$item" ]]; then
-        ((++INDEX))
-        sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${item##*\/} (0)+g" $MFILE
-        string=$(buildmainacc $item $INDEX); array=($string)
-        ((SUM+=${array[0]})); ((NFILES+=${array[1]}+1)); INDEX=${array[2]}
-    fi
-    if [[ "$item" =~ .*\.md ]]; then
-    	((++INDEX))
+	if [[ -d "$item" ]]; then
+		((++INDEX))
+		sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${item##*\/} (0)+g" $MFILE
+		string=$(buildmainacc $item $INDEX); array=($string)
+		((SUM+=${array[0]})); ((NFILES+=${array[1]}+1)); INDEX=${array[2]}
+	fi
+	if [[ "$item" =~ .*\.md ]]; then
+		((++INDEX))
 
-    	new_dir=$(echo ${item} | sed -e "s/\.md//g")
-    	mkdir "${new_dir}"
-    	touch "${new_dir}/index.html"
-    	cp "${item}" "${new_dir}/index.html"
+		new_dir=$(echo ${item} | sed -e "s/\.md//g")
+		mkdir "${new_dir}"
+		touch "${new_dir}/index.html"
+		cp "${item}" "${new_dir}/index.html"
 
-        replacement_text="<a href="https:\/\/github.com\/${USERNAME}\/${REPONAME}\/blob\/${BRANCH}\/${item:2}">$(echo ${item##*\/} | sed -e "s/\.md//g")</a> (0)"
-        sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${replacement_text}+g" $MFILE
+		replacement_text="<a href="https:\/\/${USERNAME}.github.io\/${REPONAME}\/$(echo ${item:2} | sed -e "s/\.md//g")">$(echo ${item##*\/} | sed -e "s/\.md//g")</a> (0)"
+		sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${replacement_text}+g" $MFILE
 
-        local NPAPERS=0
-        while read line; do
-            if [[ "$line" == *"*"* ]]; then ((++NPAPERS)); fi
-        done < "$item"
+		local NPAPERS=0
+		while read line; do
+			if [[ "$line" == *"*"* ]]; then ((++NPAPERS)); fi
+		done < "$item"
 
-        ((SUM+=NPAPERS)); ((++NFILES))
-        addnum $NPAPERS $INDEX
+		((SUM+=NPAPERS)); ((++NFILES))
+		addnum $NPAPERS $INDEX
 
-        rm "${item}"
-    fi
+		rm "${item}"
+	fi
 done
 ((INDEX-=NFILES))
 if [[ $DIR != "." ]]; then addnum $SUM $INDEX; fi
@@ -194,6 +192,13 @@ EOF
 
 buildmainacc . 0 &> /dev/null
 rm "${MFILE}.bak"; rm tREADME
+}
+
+# makes simple README
+buildreadme() {
+cat << EOF > README
+https://${USERNAME}.github.io/${REPONAME}
+EOF
 }
 
 help() {
@@ -218,6 +223,7 @@ done
 
 buildfiles
 buildmain
+buildreadme
 }
 
 main $@
