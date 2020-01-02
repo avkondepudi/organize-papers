@@ -58,7 +58,7 @@ EOF
 # adds paper to file
 addinfo() {
 if [[ ! -z "$NAME" ]]; then
-	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md" "${RELPATH:2}"; fi
+	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md" "$(echo "${RELPATH:2}" | sed -e "s/\// >> /g" )"; fi
 
 	# modified remanent from before; idk what it does
 	LINKS="$(echo "$LINKS" | sed -e 's/\^//g')"
