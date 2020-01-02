@@ -115,7 +115,7 @@ while IFS= read -r line || [ -n "$line" ]; do
 			for suffix in "com" "org" "edu" "gov" "github.io" "io" "ai"; do nlink=${nlink%\.${suffix}*}; done
 
 			# change to differentiate between pdf and not
-			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [<a href=${VALUE} target="_blank">${nlink}</a>]"
+			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [[<a href=${VALUE} target="_blank">${nlink}</a>]]"
 			else LINKS="${LINKS} [<a href=${VALUE} target="_blank">${nlink}</a>]"
 			fi
 			;;
@@ -208,7 +208,8 @@ buildreadme() {
 cat << EOF > README
 https://${USERNAME}.github.io/${REPONAME}
 
-made with github pages and avkondepudi/organize-papers
+made with avkondepudi/organize-papers
+hosted by github pages
 EOF
 }
 
