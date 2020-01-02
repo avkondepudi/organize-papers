@@ -215,8 +215,8 @@ EOF
 help() {
 cat << EOF
 -d | --dir [directory; default: .]
--i | --input [input file; default: papers.yml]
--m | --main [directory file; default: README]
+-i | --input [input file; default: ./papers.yml]
+-m | --main [directory file; default: ./index.html]
 EOF
 }
 
