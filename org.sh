@@ -1,8 +1,15 @@
 #!/bin/bash
 
+########################
+# FILE: org.sh         #
+# CREATOR: avkondepudi #
+# DATE: 01/02/2020     #
+########################
+
+# sets global vars
 global() {
 
-# check if tree present
+# checks if tree present
 if [[ ! -x "$(command -v tree)" ]]; then echo "install tree"; exit 1; fi
 
 IFILE="papers.yml"
@@ -11,20 +18,18 @@ REPONAME=$(pwd); REPONAME="${REPONAME##*\/}"
 BRANCH="$(git branch | grep \* | cut -d ' ' -f2)"
 
 FILEDIR="."
-MFILE="README"
+MFILE="index.html"
 
 resetvars
 }
 
+# resets vars used in funcs
 resetvars() {
-# main vars for functions
-
 NAME=""; LINKS=""; YEAR=""
 }
 
+# creates file and adds title
 addtitle() {
-# creates file and adds header
-
 local filename="$1"
 local title="$2"
 
@@ -32,26 +37,28 @@ if [[ -z "$title" ]]; then title="$(echo ${filename##*\/} | sed -e "s/\.md//g")"
 if [[ -d "${filename%\/*}" && "${filename}" =~ ^\. ]]; then rm -rf "${filename%\.*}"; fi
 
 cat << EOF > "${filename}"
+<pre>
 ${title}
 ====
 
 EOF
 }
 
-addinfo() {
 # adds paper to file
-
+addinfo() {
 if [[ ! -z "$NAME" ]]; then
 	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md"; fi
-	LINKS="$(echo "$LINKS" | sed -e 's/\^/ /g' -e 's/ //g')"
-	echo "* ${NAME} ${LINKS} (${YEAR})" >> "${RELPATH}.md"
+
+	# modified remanent from before; idk what it does
+	LINKS="$(echo "$LINKS" | sed -e 's/\^//g')"
+
+	echo "* ${NAME}${LINKS} (${YEAR})" >> "${RELPATH}.md"
 	resetvars
 fi
 }
 
-getpath() {
 # determines current subdir
-
+getpath() {
 if [[ -z "$VALUE" ]]; then
 	local line="$1"
 	if [[ $LEVEL -eq 1 ]]; then RELPATH="$FILEDIR"; fi
@@ -76,9 +83,8 @@ if [[ -z "$VALUE" ]]; then
 fi
 }
 
+# a crude YAML parser
 getinfo() {
-# essentially a crude YAML parser
-
 local line="$1"
 VALUE="${line#*:}"; VALUE="${VALUE:1}"
 KEY="${line%%:*}"; KEY=$(echo $KEY | sed -e "s/-//g" -e "s/ //g")
@@ -87,11 +93,13 @@ if [[ "$line" == *"  - "* ]]; then
 fi
 }
 
+# main func for creating all files
 buildfiles() {
-# main function for creating all files
 
+# change to $MFILE?
 rm README.* &> /dev/null 
 if [[ ! -f $MFILE ]]; then touch $MFILE; fi
+
 while IFS= read -r line || [ -n "$line" ]; do
 
 	if [[ "$line" == *"  - "* && ! -z "$VALUE" ]]; then addinfo; fi
@@ -104,8 +112,10 @@ while IFS= read -r line || [ -n "$line" ]; do
 			nlink="$VALUE"
 			for prefix in "https*:\/\/" "www\."; do nlink=$(echo "$nlink" | sed -e "s/${prefix}//g" ); done
 			for suffix in "com" "org" "edu" "gov" "github.io" "io" "ai"; do nlink=${nlink%\.${suffix}*}; done
-			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS}^<[${nlink}](${VALUE})>"
-			else LINKS="${LINKS}^\[[${nlink}](${VALUE})\]"
+
+			# change later!
+			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
+			else LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
 			fi
 			;;
 		year) YEAR="$VALUE";;
@@ -124,9 +134,8 @@ done < "$IFILE"
 addinfo
 }
 
+# adds num of papers found in each category to home file
 addnum() {
-# adds number of papers found in each category to dir file
-
 local val=$1
 local index=$2
 
@@ -135,9 +144,8 @@ tr '\n' '^' < $MFILE | sed -e "${regex}" | tr '^' '\n' > tREADME
 cp tREADME $MFILE
 }
 
-buildmainacc() {
 # counts how many papers in each dir; cool recursion
-
+buildmainacc() {
 local INDEX=$2
 DIR="$1"; local SUM=0; local NFILES=0
 for item in "$DIR"/*; do
@@ -150,7 +158,12 @@ for item in "$DIR"/*; do
     if [[ "$item" =~ .*\.md ]]; then
     	((++INDEX))
 
-        replacement_text="$(echo ${item##*\/} | sed -e "s/\.md//g") (0) \| (https:\/\/github.com\/${USERNAME}\/${REPONAME}\/blob\/${BRANCH}\/${item:2})"
+    	new_dir=$(echo ${item} | sed -e "s/\.md//g")
+    	mkdir "${new_dir}"
+    	touch "${new_dir}/index.html"
+    	cp "${item}" "${new_dir}/index.html"
+
+        replacement_text="<a href="https:\/\/github.com\/${USERNAME}\/${REPONAME}\/blob\/${BRANCH}\/${item:2}">$(echo ${item##*\/} | sed -e "s/\.md//g")</a> (0)"
         sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${replacement_text}+g" $MFILE
 
         local NPAPERS=0
@@ -160,6 +173,8 @@ for item in "$DIR"/*; do
 
         ((SUM+=NPAPERS)); ((++NFILES))
         addnum $NPAPERS $INDEX
+
+        rm "${item}"
     fi
 done
 ((INDEX-=NFILES))
@@ -168,11 +183,15 @@ if [[ $DIR != "." ]]; then addnum $SUM $INDEX; fi
 echo $SUM $NFILES $INDEX
 }
 
+# main function for creating home file
 buildmain() {
-# main function for creating dir file
-
 OFFSET=$(wc -l < $MFILE | tr -d '[:space:]'); ((++OFFSET))
 tree -I "README.*" -P "*.md" >> $MFILE
+
+cat << EOF >> "$MFILE"
+</pre>
+EOF
+
 buildmainacc . 0 &> /dev/null
 rm "${MFILE}.bak"; rm tREADME
 }
