@@ -37,6 +37,7 @@ if [[ -z "$title" ]]; then title="$(echo ${filename##*\/} | sed -e "s/\.md//g")"
 if [[ -d "${filename%\/*}" && "${filename}" =~ ^\. ]]; then rm -rf "${filename%\.*}"; fi
 
 cat << EOF > "${filename}"
+<html>
 <title>${title}</title>
 <pre>
 ${title}
