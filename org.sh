@@ -37,6 +37,7 @@ if [[ -z "$title" ]]; then title="$(echo ${filename##*\/} | sed -e "s/\.md//g")"
 if [[ -d "${filename%\/*}" && "${filename}" =~ ^\. ]]; then rm -rf "${filename%\.*}"; fi
 
 cat << EOF > "${filename}"
+<title>${title}</title>
 <pre>
 ${title}
 ====
@@ -47,7 +48,7 @@ EOF
 # adds paper to file
 addinfo() {
 if [[ ! -z "$NAME" ]]; then
-	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md"; fi
+	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md" "${RELPATH:2}"; fi
 
 	# modified remanent from before; idk what it does
 	LINKS="$(echo "$LINKS" | sed -e 's/\^//g')"
@@ -112,8 +113,10 @@ while IFS= read -r line || [ -n "$line" ]; do
 			nlink="$VALUE"
 			for prefix in "https*:\/\/" "www\."; do nlink=$(echo "$nlink" | sed -e "s/${prefix}//g" ); done
 			for suffix in "com" "org" "edu" "gov" "github.io" "io" "ai"; do nlink=${nlink%\.${suffix}*}; done
-			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
-			else LINKS="${LINKS} [<a href=${VALUE}>${nlink}</a>]"
+
+			# change to differentiate between pdf and not
+			if [[ "$VALUE" =~ [pP][dD][fF] ]]; then LINKS="${LINKS} [<a href=${VALUE} target="_blank">${nlink}</a>]"
+			else LINKS="${LINKS} [<a href=${VALUE} target="_blank">${nlink}</a>]"
 			fi
 			;;
 		year) YEAR="$VALUE";;
@@ -156,10 +159,14 @@ for item in "$DIR"/*; do
 	if [[ "$item" =~ .*\.md ]]; then
 		((++INDEX))
 
+		# create html file
 		new_dir=$(echo ${item} | sed -e "s/\.md//g")
 		mkdir "${new_dir}"
 		touch "${new_dir}/index.html"
 		cp "${item}" "${new_dir}/index.html"
+
+		# go back home in html file
+		printf "\n<a href=https://${USERNAME}.github.io/${REPONAME}>home</a>" >> "${new_dir}/index.html"
 
 		replacement_text="<a href="https:\/\/${USERNAME}.github.io\/${REPONAME}\/$(echo ${item:2} | sed -e "s/\.md//g")">$(echo ${item##*\/} | sed -e "s/\.md//g")</a> (0)"
 		sed -i ".bak" "$((INDEX+OFFSET)) s+ ${item##*\/}+ ${replacement_text}+g" $MFILE
@@ -185,8 +192,10 @@ echo $SUM $NFILES $INDEX
 buildmain() {
 OFFSET=$(wc -l < $MFILE | tr -d '[:space:]'); ((++OFFSET))
 tree -I "README.*" -P "*.md" >> $MFILE
+sed -i '' -e '$ d' $MFILE
 
 cat << EOF >> "$MFILE"
+<a href="https://github.com/avkondepudi/glowing-disco" target="_blank">source</a>
 </pre>
 EOF
 
@@ -198,6 +207,8 @@ rm "${MFILE}.bak"; rm tREADME
 buildreadme() {
 cat << EOF > README
 https://${USERNAME}.github.io/${REPONAME}
+
+made with github pages and avkondepudi/organize-papers
 EOF
 }
 
