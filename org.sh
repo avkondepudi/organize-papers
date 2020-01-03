@@ -3,7 +3,7 @@
 ########################
 # FILE: org.sh         #
 # CREATOR: avkondepudi #
-# DATE: 01/02/2020     #
+# DATE: 01/03/2020     #
 ########################
 
 # sets global vars
@@ -43,7 +43,9 @@ local filename="$1"
 local title="$2"
 
 if [[ -z "$title" ]]; then title="$(echo ${filename##*\/} | sed -e "s/\.md//g")"; fi
-if [[ -d "${filename%\/*}" && "${filename}" =~ ^\. ]]; then rm -rf "${filename%\.*}"; fi
+if [[ -d "${filename%\/*}" && "${filename}" =~ ^\. ]]; then 
+	rm -rf "${filename%\.*}"
+fi
 
 cat << EOF > "${filename}"
 <html>
@@ -58,7 +60,9 @@ EOF
 # adds paper to file
 addinfo() {
 if [[ ! -z "$NAME" ]]; then
-	if [[ ! -f "${RELPATH}.md" ]]; then addtitle "${RELPATH}.md" "$(echo "${RELPATH:2}" | sed -e "s/\// >> /g" )"; fi
+	if [[ ! -f "${RELPATH}.md" ]]; then 
+		addtitle "${RELPATH}.md" "$(echo "${RELPATH:2}" | sed -e "s/\// >> /g" )"
+	fi
 
 	# modified remanent from before; idk what it does
 	LINKS="$(echo "$LINKS" | sed -e 's/\^//g')"
@@ -87,8 +91,13 @@ if [[ -z "$VALUE" ]]; then
 		SUB_RELPATH=${line#*-}; SUB_RELPATH=${SUB_RELPATH%:*}; RELPATH="${RELPATH}/${SUB_RELPATH:1}"
 	fi
 
-	if [[ $RELPATH =~ \/$ ]]; then RELPATH=${RELPATH%\/*}; fi
-	if [[ ! -d $RELPATH && $RELPATH == *"."* ]]; then mkdir $RELPATH; fi
+	if [[ $RELPATH =~ \/$ ]]; then
+		RELPATH=${RELPATH%\/*}
+		rm -rf "$RELPATH"
+	fi
+	if [[ ! -d $RELPATH && $RELPATH == *"."* ]]; then 
+		mkdir "$RELPATH"
+	fi
 
 	if [[ $LEVEL -eq 1 ]]; then rm -rf "$RELPATH"; mkdir "$RELPATH"; fi
 fi
@@ -113,9 +122,11 @@ rm $MFILE &> /dev/null
 rm README.* &> /dev/null 
 if [[ ! -f $MFILE ]]; then touch $MFILE; fi
 
-while IFS= read -r line || [ -n "$line" ]; do
+while IFS= read -r line && [ -n "$line" ]; do
 
-	if [[ "$line" == *"  - "* && ! -z "$VALUE" ]]; then addinfo; fi
+	if [[ "$line" == *"  - "* && ! -z "$VALUE" ]]; then 
+		addinfo
+	fi
 	getinfo "$line"
 	getpath "$line"
 
