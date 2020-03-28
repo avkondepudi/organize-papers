@@ -218,7 +218,7 @@ tree -I "README.*" -P "*.md" >> $MFILE
 sed -i '' -e '$ d' $MFILE
 
 cat << EOF >> "$MFILE"
-<a href="https://github.com/avkondepudi/glowing-disco" target="_blank">source</a>
+<a href="https://github.com/${USERNAME}/${REPONAME}" target="_blank">source</a>
 </pre>
 EOF
 
