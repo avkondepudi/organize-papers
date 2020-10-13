@@ -5,8 +5,6 @@ A shell script to build a network of directories from a YAML file that contains 
 
 If you don't want to use GitHub Pages, use the shell script found under the "old" branch.
 
-An example can be found [here](https://github.com/avkondepudi/glowing-disco).
-
 ### dependencies
 
 Needs tree.
