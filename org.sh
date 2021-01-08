@@ -67,7 +67,11 @@ if [[ ! -z "$NAME" ]]; then
 	# modified remanent from before; idk what it does
 	LINKS="$(echo "$LINKS" | sed -e 's/\^//g')"
 
-	echo "* ${NAME}${LINKS} (${YEAR})" >> "${RELPATH}.md"
+	if [[ ! "$YEAR" -eq "none" ]]; then
+		echo "* ${NAME}${LINKS} (${YEAR})" >> "${RELPATH}.md"
+	else
+		echo "* ${NAME}${LINKS}" >> "${RELPATH}.md"
+	fi
 	resetvars
 fi
 }
@@ -218,7 +222,7 @@ tree -I "README.*" -P "*.md" >> $MFILE
 sed -i '' -e '$ d' $MFILE
 
 cat << EOF >> "$MFILE"
-<a href="https://github.com/${USERNAME}/${REPONAME}" target="_blank">source</a>
+<a href="https://github.com/avkondepudi/glowing-disco" target="_blank">source</a>
 </pre>
 EOF
 
