@@ -23,7 +23,7 @@ flags:
 -m | --main [MAINFILE] (default: ./index.html)
 ```
 
-Mulitple links can be added for each paper. Double brackets refers to links that are pdfs; single brackets are non-pdfs.
+Mulitple links can be added for each paper. Double brackets refers to links that are pdfs; single brackets are non-pdfs. Set the "year" key to "none" if applicable.
 
 A custom title and summary can be added to the main file (README). Map the title to the key "title" and the summary to the key "info" at the top of the YAML file.
 
